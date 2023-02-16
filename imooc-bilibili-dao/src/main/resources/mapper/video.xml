@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.imooc.bilibili.dao.VideoDao">
+
+    <insert id="addVideos" parameterType="com.imooc.bilibili.domain.Video" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO
+            t_video(
+                    userId,
+                    url,
+                    thumbnail,
+                    title,
+                    `type`,
+                    duration,
+                    area,
+                    `description`,
+                    createTime
+        )
+        VALUES (
+                #{userId},
+                #{url},
+                #{thumbnail},
+                #{title},
+                #{type},
+                #{duration},
+                #{area},
+                #{description},
+                #{createTime}
+               )
+    </insert>
+
+    <insert id="batchAddVideoTags" parameterType="java.util.List">
+        INSERT INTO
+            t_video_tag(
+                videoId, tagId, createTime
+        )VALUES
+             <foreach collection="videoTagList" item="videoTag" separator=",">
+                 (
+                     #{videoTag.videoId},
+                     #{videoTag.tagId},
+                     #{videoTag.createTime}
+                 )
+             </foreach>
+
+    </insert>
+    
+    <select id="pageCountVideos" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM t_video
+        WHERE
+            1=1
+            <if test="area != null and area != ''">
+                and area=#{area}
+            </if>
+    </select>
+
+    <select id="pageListVideos" parameterType="java.util.Map" resultType="com.imooc.bilibili.domain.Video">
+        SELECT *
+        FROM
+            t_video
+        WHERE
+            1=1
+            <if test="area != null and area != ''">
+                and area=#{area}
+            </if>
+        ORDER BY id desc
+        LIMIT #{start}, #{limit}
+    </select>
+    
+    <insert id="addVideoLike" parameterType="com.imooc.bilibili.domain.VideoLike">
+        INSERT INTO
+            t_video_like(
+                        userId, videoId, createTime
+        )VALUES (
+                 #{userId},
+                 #{videoId},
+                 #{createTime}
+                )
+    </insert>
+    <delete id="deleteVideoLike">
+        DELETE
+        FROM t_video_like
+        WHERE userId=#{userId} and videoId=#{videoId}
+    </delete>
+
+    <select id="getVideoById" parameterType="java.lang.Long" resultType="com.imooc.bilibili.domain.Video">
+        SELECT *
+        FROM t_video
+        WHERE id = #{videoId}
+
+    </select>
+
+    <select id="getVideoLikeByVideoIdAndUserId" resultType="com.imooc.bilibili.domain.VideoLike">
+        SELECT *
+        FROM t_video_like
+        WHERE
+            videoId=#{videoId} and userId=#{userId}
+    </select>
+    
+    <select id="getVideoLikes" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT
+            COUNT(1)
+        FROM t_video_like
+        WHERE
+            videoId=#{videoId}
+
+    </select>
+
+    <delete id="deleteVideoCollection">
+        DELETE
+        FROM
+            t_video_collection
+        WHERE videoId = #{videoId} and
+              userId= #{userId}
+    </delete>
+
+    <insert id="addVideoCollection" parameterType="com.imooc.bilibili.domain.VideoCollection">
+        INSERT INTO
+            t_video_collection(
+                               videoId, userId, groupId, createTime
+        ) VALUES (
+                  #{videoId},
+                  #{userId},
+                  #{groupId},
+                  #{createTime}
+                         )
+    </insert>
+
+    <select id="getVideoCollections" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT
+            COUNT(1)
+        FROM t_video_collection
+        WHERE
+            videoId=#{videoId}
+    </select>
+
+    <select id="getVideoCollectionByVideoIdAndUserId" resultType="com.imooc.bilibili.domain.VideoCollection">
+        SELECT *
+        FROM t_video_collection
+        WHERE userId=#{userId} and videoId=#{videoId}
+    </select>
+    
+    <select id="getVideoCoinByVideoIdAndUserId" resultType="com.imooc.bilibili.domain.VideoCoin">
+        SELECT *
+        FROM t_video_coin
+        WHERE
+            userId=#{userId} and videoId=#{videoId}
+
+    </select>
+
+    <insert id="addVideoCoin" parameterType="com.imooc.bilibili.domain.VideoCoin">
+        INSERT INTO
+            t_video_coin(
+                         userId, videoId, amount, createTime
+        ) VALUES (
+                  #{userId},
+                  #{videoId},
+                  #{amount},
+                  #{createTime}
+                         )
+    </insert>
+
+    <update id="updateVideoCoin">
+        UPDATE
+            t_video_coin
+        SET
+            amount=#{amount},
+            updateTime = #{updateTime}
+        WHERE
+            userId=#{userId} and videoId=#{videoId}
+
+    </update>
+    <select id="getVideoCoinsAmount" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select
+            sum(amount)
+        from
+            t_video_coin
+        where
+            videoId = #{videoId}
+    </select>
+
+    <insert id="addVideoComment" parameterType="com.imooc.bilibili.domain.VideoComment">
+        INSERT INTO
+            t_video_comment(
+                            videoId, userId, `comment`, replyUserId, rootId, createTime
+        )VALUES (
+                 #{userId},
+                 #{userId},
+                 #{comment},
+                 #{replyUserId},
+                 #{rootId},
+                 #{createTime}
+                        )
+
+    </insert>
+    <select id="pageCountVideoComments" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM t_video_comment
+        WHERE videoId=#{videoId}
+    </select>
+    
+    <select id="pageListVideoComments" parameterType="java.util.Map" resultType="com.imooc.bilibili.domain.VideoComment">
+        SELECT
+            *
+        FROM t_video_comment
+        WHERE videoId=#{videoId}
+        ORDER BY id DESC
+        LIMIT #{start}, #{size}
+    </select>
+    
+    <select id="batchGetVideoCommentsByRootIds" parameterType="java.util.List" resultType="com.imooc.bilibili.domain.VideoComment">
+        SELECT
+            *
+        FROM t_video_comment
+        WHERE
+            rootId in 
+            <foreach collection="parentIdList" item="rootId" open="(" close=")" separator=",">
+                #{rootId}
+            </foreach>
+    </select>
+
+    <select id="getVideoDetails" parameterType="java.lang.Long" resultType="com.imooc.bilibili.domain.Video">
+        SELECT
+            *
+        FROM t_video
+        WHERE
+            id=#{videoId}
+    </select>
+
+
+</mapper>
