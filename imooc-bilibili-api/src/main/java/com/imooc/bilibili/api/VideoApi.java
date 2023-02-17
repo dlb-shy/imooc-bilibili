@@ -2,6 +2,7 @@ package com.imooc.bilibili.api;
 
 import com.imooc.bilibili.api.support.UserSupport;
 import com.imooc.bilibili.domain.*;
+import com.imooc.service.ElasticSearchService;
 import com.imooc.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +19,16 @@ public class VideoApi {
 
     @Autowired
     private UserSupport userSupport;
+    @Autowired
+    private ElasticSearchService elasticSearchService;
 
     @PostMapping("/videos")
     public JsonResponse<String> addVideos(@RequestBody Video video){
         Long userId = userSupport.getCurrentUserId();
         video.setUserId(userId);
         videoService.addVideos(video);
+        // 在es中添加一条视频数据
+        elasticSearchService.addVideo(video);
         return JsonResponse.success();
     }
 

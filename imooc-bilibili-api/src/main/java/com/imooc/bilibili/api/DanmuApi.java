@@ -1,4 +1,4 @@
-package com.imooc;
+package com.imooc.bilibili.api;
 
 import com.imooc.bilibili.api.support.UserSupport;
 import com.imooc.bilibili.domain.Danmu;

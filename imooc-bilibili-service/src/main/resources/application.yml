@@ -6,6 +6,6 @@ spring:
       enabled: true
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.imooc/bilibili.dao
+  type-aliases-package: com.imooc.bilibili.dao
   configuration:
     map-underscore-to-camel-case: true
