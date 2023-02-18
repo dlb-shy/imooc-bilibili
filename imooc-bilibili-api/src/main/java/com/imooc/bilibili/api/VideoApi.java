@@ -4,11 +4,13 @@ import com.imooc.bilibili.api.support.UserSupport;
 import com.imooc.bilibili.domain.*;
 import com.imooc.service.ElasticSearchService;
 import com.imooc.service.VideoService;
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -165,8 +167,47 @@ public class VideoApi {
         return new JsonResponse<>(result);
     }
 
+    /**
+     * 添加视频观看记录
+     * @param videoView
+     * @param request
+     * @return
+     */
+    @PostMapping("/video-views")
+    public JsonResponse<String> addVideoView(@RequestBody VideoView videoView,
+                                             HttpServletRequest request){
+        Long userId;
+        try{
+            userId = userSupport.getCurrentUserId();
+            videoView.setUserId(userId);
+            videoService.addVideoView(videoView, request);
+        }catch (Exception e){
+            videoService.addVideoView(videoView, request);
+        }
+        return JsonResponse.success();
+    }
 
+    @GetMapping("/video-view-counts")
+    public JsonResponse<Integer> getVideoViewCounts(@RequestParam Long videoId){
+        Integer count = videoService.getVideoViewCounts(videoId);
+        return new JsonResponse<>(count);
+    }
 
+    @GetMapping("/recommendations")
+    public JsonResponse<List<Video>> recommend() throws TasteException {
+        Long userId = userSupport.getCurrentUserId();
+        List<Video> list = videoService.recommond(userId);
+        return new JsonResponse<>(list);
+    }
+    /**
+     * 视频帧截取生成黑白剪影
+     */
+    @GetMapping("/video-frames")
+    public JsonResponse<List<VideoBinaryPicture>> captureVideoFrame(@RequestParam Long videoId,
+                                                                    @RequestParam String fileMd5) throws Exception {
+        List<VideoBinaryPicture> list = videoService.convertVideoToImage(videoId, fileMd5);
+        return new JsonResponse<>(list);
+    }
 
 
 }

@@ -228,5 +228,89 @@
             id=#{videoId}
     </select>
 
+    <select id="getVideoView" parameterType="java.util.Map" resultType="com.imooc.bilibili.domain.VideoView">
+        SELECT *
+        FROM
+            t_video_view
+        WHERE
+            videoId=#{videoId}
+            <if test="userId == null and clientId != null">
+                AND clientId = #{clientId} AND userId IS NULL
+            </if>
+            <if test="userId != null">
+                AND userId = #{userId}
+            </if>
+            <if test="ip != null and ip != '' ">
+                AND ip = #{ip}
+            </if>
+            <if test="today != null and today != '' ">
+                AND DATE_FORMAT(createTime, '%Y-%m-%d') = #{today}
+            </if>
+    </select>
+
+    <insert id="addVideoView" parameterType="com.imooc.bilibili.domain.VideoView" >
+        INSERT INTO
+            t_video_view(
+                    videoId, userId, clientId, ip, createTime
+        )VALUES (
+                 #{videoId},
+                 #{userId},
+                 #{userId},
+                 #{ip},
+                 #{createTime}
+
+                        )
+    </insert>
+
+    <select id="getVideoViewCounts" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT
+            COUNT(1)
+        FROM
+            t_video_view
+        WHERE
+            videoId = #{videoId}
+    </select>
+
+    <select id="getAllUserPreference" resultType="com.imooc.bilibili.domain.UserPreference">
+        SELECT
+            userId, videoId,
+            sum(CASE operationType
+                WHEN '0' THEN 6
+                WHEN '1' THEN 2
+                WHEN '2' THEN 2
+                else 0 end
+                ) as `value`
+        FROM t_video_operation
+        GROUP BY userId, videoId
+    </select>
+    <select id="batchGetVideosByIds" resultType="com.imooc.bilibili.domain.Video">
+        SELECT *
+        FROM t_video
+        WHERE id in
+            <foreach collection="itemIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+    </select>
+
+    <insert id="batchAddVideoBinaryPictures" parameterType="java.util.List">
+        insert into
+        t_video_binary_picture(
+        videoId,
+        frameNo,
+        url,
+        videoTimestamp,
+        createTime
+        )
+        values
+        <foreach collection="pictureList" item="picture" separator=",">
+            (
+            #{picture.videoId},
+            #{picture.frameNo},
+            #{picture.url},
+            #{picture.videoTimestamp},
+            #{picture.createTime}
+            )
+        </foreach>
+    </insert>
 
 </mapper>

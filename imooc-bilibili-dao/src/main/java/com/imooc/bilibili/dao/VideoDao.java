@@ -54,4 +54,16 @@ public interface VideoDao {
     List<VideoComment> batchGetVideoCommentsByRootIds(List<Long> parentIdList);
 
     Video getVideoDetails(Long videoId);
+
+    VideoView getVideoView(Map<String, Object> params);
+
+    Integer addVideoView(VideoView videoView);
+
+    Integer getVideoViewCounts(Long videoId);
+
+    List<UserPreference> getAllUserPreference();
+
+    List<Video> batchGetVideosByIds(List<Long> itemIds);
+
+    Integer batchAddVideoBinaryPictures(List<VideoBinaryPicture> pictures);
 }
